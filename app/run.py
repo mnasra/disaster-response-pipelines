@@ -26,12 +26,12 @@ def tokenize(text):
     return clean_tokens
 
 # load data
-engine = create_engine('sqlite:///../data/YourDatabaseName.db')
-df = pd.read_sql_table('YourTableName', engine)
+engine = create_engine('sqlite:///../DisasterResponse.db')
+df = pd.read_sql_table('Message', engine)
 
 # load model
-model = joblib.load("../models/your_model_name.pkl")
-
+model = joblib.load("../models/modelv1.pkl")
+vect = joblib.load("../models/vectv1.pkl")
 
 # index webpage displays cool visuals and receives user input text for model
 @app.route('/')
@@ -79,9 +79,9 @@ def index():
 def go():
     # save user input in query
     query = request.args.get('query', '') 
-
+    vectorised_query = vect.fit_transform([query])
     # use model to predict classification for query
-    classification_labels = model.predict([query])[0]
+    classification_labels = model.predict([[vectorised_query]])[0]
     classification_results = dict(zip(df.columns[4:], classification_labels))
 
     # This will render the go.html Please see that file. 
@@ -93,7 +93,7 @@ def go():
 
 
 def main():
-    app.run(host='0.0.0.0', port=3001, debug=True)
+    app.run(host='127.0.0.1', port=3001, debug=True)
 
 
 if __name__ == '__main__':

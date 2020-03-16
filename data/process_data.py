@@ -32,6 +32,7 @@ def clean_data(messages, categories):
 
     #Remove duplicates
     # We will arbitrarily pick the first value as there are only 68 cases out of 26248
+    # where the duplicated rows have different values
     df_clean = df_merged.loc[~df_merged['id'].duplicated(keep='first')]
     return df_clean
 
