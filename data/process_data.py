@@ -4,12 +4,32 @@ import sys
 
 
 def load_data(messages_filepath, categories_filepath):
+    """Loads the data and returns two pandas dataframes
+    containing the data
+
+    Keyword arguments:
+    messages_filepath - string file path to the messages.csv file
+    categories_filepath - string file path to the categories.csv file
+    
+    Returns:
+    messages - pandas dataframe containing the messages.csv data
+    categories - pandas dataframe containing the categories.csv data
+    """
     messages = pd.read_csv(messages_filepath)
     categories = pd.read_csv(categories_filepath)
 
     return messages, categories
 
 def clean_data(messages, categories):
+    """Cleans the messages and categories data and then merges them together
+
+    Keyword arguments:
+    messages - pandas dataframe containing the messages.csv data
+    categories - pandas dataframe containing the categories.csv data
+    
+    Returns:
+    df_clean - Clean pandas dataframe that contains both datasets merged
+    """
     # split the single column into 36 different columns
     categories_split = categories['categories'].str.split(';',expand=True)
 
@@ -38,12 +58,23 @@ def clean_data(messages, categories):
 
 #function to apply to all cells to strip the unnecessary words
 def fix_categories_data(cell):
+    """Returns all characters before a '-' symbol
+
+    Keyword arguments:
+    cell - string
+    """
     if '-' in str(cell): #Condition put in to avoid errors with the id column
         return cell.split('-')[1]
     else:
         return cell
 
 def save_data(df, database_filename):
+    """Saves dataframe to a SQLite database at the specified location
+
+    Keyword arguments:
+    df - pandas dataframe containing the clean data
+    database_filename - string containing the location to store the SQLite database
+    """
     engine = sqlalchemy.create_engine('sqlite:///'+database_filename)
     df.to_sql('DisasterResponseTable', engine, index=False)
 

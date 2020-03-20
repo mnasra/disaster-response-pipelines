@@ -8,7 +8,7 @@ from nltk.tokenize import word_tokenize
 from flask import Flask
 from flask import render_template, request, jsonify
 from plotly.graph_objs import Bar
-from sklearn.externals import joblib
+import pickle
 from sqlalchemy import create_engine
 
 
@@ -26,12 +26,12 @@ def tokenize(text):
     return clean_tokens
 
 # load data
-engine = create_engine('sqlite:///../DisasterResponse.db')
+engine = create_engine('sqlite:///../data/DisasterResponse.db')
 df = pd.read_sql_table('Message', engine)
 
 # load model
-model = joblib.load("../models/modelv1.pkl")
-vect = joblib.load("../models/vectv1.pkl")
+with open("../models/classifier.pkl",'rb') as f:
+    model = pickle.load(f)
 
 # index webpage displays cool visuals and receives user input text for model
 @app.route('/')
@@ -46,6 +46,25 @@ def index():
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
     graphs = [
+       {
+            'data': [
+                Bar(
+                    x=df.iloc[:,5:].sum().sort_values(ascending=False).index,
+                    y=df.iloc[:,5:].sum().sort_values(ascending=False).values
+                )
+            ],
+
+            'layout': {
+                'title': 'Distribution of message topics',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "Topic",
+                    'tickangle':-50
+                }
+            }
+        },
         {
             'data': [
                 Bar(
@@ -79,9 +98,9 @@ def index():
 def go():
     # save user input in query
     query = request.args.get('query', '') 
-    vectorised_query = vect.fit_transform([query])
+
     # use model to predict classification for query
-    classification_labels = model.predict([[vectorised_query]])[0]
+    classification_labels = model.predict([query])[0]
     classification_results = dict(zip(df.columns[4:], classification_labels))
 
     # This will render the go.html Please see that file. 
